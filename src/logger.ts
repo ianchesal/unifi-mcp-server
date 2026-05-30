@@ -1,6 +1,6 @@
-const LEVELS = { error: 0, warn: 1, info: 2, debug: 3 } as const;
+export const LEVELS = { error: 0, warn: 1, info: 2, debug: 3 } as const;
 
-type LogLevel = keyof typeof LEVELS;
+export type LogLevel = keyof typeof LEVELS;
 
 export interface Logger {
   error(msg: string, ...args: unknown[]): void;
