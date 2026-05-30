@@ -57,7 +57,7 @@ export function registerPortTools(server: McpServer, client: IUnifiClient): void
   server.tool(
     'create_port_forward',
     'Create a port forward rule. Required: name, dst_port (external port), fwd (destination IP), fwd_port (internal port), proto (tcp/udp/tcp_udp).',
-    { rule: z.record(z.unknown()) },
+    { rule: z.record(z.string(), z.unknown()) },
     async ({ rule }) => {
       try {
         return toolResult(await createPortForward(client, rule));
@@ -70,7 +70,7 @@ export function registerPortTools(server: McpServer, client: IUnifiClient): void
   server.tool(
     'update_port_forward',
     'Update a port forward rule by ID. Only provide fields to change.',
-    { id: z.string(), updates: z.record(z.unknown()) },
+    { id: z.string(), updates: z.record(z.string(), z.unknown()) },
     async ({ id, updates }) => {
       try {
         return toolResult(await updatePortForward(client, id, updates));

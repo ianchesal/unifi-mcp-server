@@ -115,7 +115,7 @@ export function registerFirewallTools(server: McpServer, client: IUnifiClient): 
   server.tool(
     'create_firewall_rule',
     'Create a new firewall rule. Required fields: name, ruleset, action (accept|drop|reject). Optional: src_address, dst_address, protocol, src_port, dst_port, enabled.',
-    { rule: z.record(z.unknown()) },
+    { rule: z.record(z.string(), z.unknown()) },
     async ({ rule }) => {
       try {
         return toolResult(await createFirewallRule(client, rule));
@@ -128,7 +128,7 @@ export function registerFirewallTools(server: McpServer, client: IUnifiClient): 
   server.tool(
     'update_firewall_rule',
     'Update an existing firewall rule by ID. Only provide fields to change — existing fields are preserved via read-before-write.',
-    { id: z.string(), updates: z.record(z.unknown()) },
+    { id: z.string(), updates: z.record(z.string(), z.unknown()) },
     async ({ id, updates }) => {
       try {
         return toolResult(await updateFirewallRule(client, id, updates));
@@ -167,7 +167,7 @@ export function registerFirewallTools(server: McpServer, client: IUnifiClient): 
   server.tool(
     'create_firewall_group',
     'Create a firewall group. Required: name, group_type (address-group|port-group|ipv6-address-group), group_members (array of IPs/CIDRs or ports).',
-    { group: z.record(z.unknown()) },
+    { group: z.record(z.string(), z.unknown()) },
     async ({ group }) => {
       try {
         return toolResult(await createFirewallGroup(client, group));
@@ -180,7 +180,7 @@ export function registerFirewallTools(server: McpServer, client: IUnifiClient): 
   server.tool(
     'update_firewall_group',
     'Update a firewall group by ID. Only provide fields to change.',
-    { id: z.string(), updates: z.record(z.unknown()) },
+    { id: z.string(), updates: z.record(z.string(), z.unknown()) },
     async ({ id, updates }) => {
       try {
         return toolResult(await updateFirewallGroup(client, id, updates));
