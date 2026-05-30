@@ -1,8 +1,9 @@
 // src/tools/network.ts
-import { z } from 'zod';
+
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 import type { IUnifiClient } from '../unifi/client.js';
-import { toolResult, toolError, toolLogger } from './util.js';
+import { toolError, toolLogger, toolResult } from './util.js';
 
 const limitSchema = z.number().int().min(1).max(500).default(100).optional();
 
@@ -27,7 +28,7 @@ export async function createNetwork(client: IUnifiClient, body: Record<string, u
 export async function updateNetwork(
   client: IUnifiClient,
   id: string,
-  updates: Record<string, unknown>,
+  updates: Record<string, unknown>
 ) {
   toolLogger.info(`update_network: updating ${id}`);
   const items = await client.get<Record<string, unknown>>(`rest/networkconf/${id}`);
@@ -44,7 +45,7 @@ export async function deleteNetwork(client: IUnifiClient, id: string, confirmNam
   const network = items[0];
   if (network.name !== confirmName) {
     throw new Error(
-      `Confirmation name '${confirmName}' does not match network name '${network.name}'. Pass the exact network name to confirm deletion.`,
+      `Confirmation name '${confirmName}' does not match network name '${network.name}'. Pass the exact network name to confirm deletion.`
     );
   }
   toolLogger.info(`delete_network: deleting ${id} (${confirmName})`);
@@ -54,24 +55,63 @@ export async function deleteNetwork(client: IUnifiClient, id: string, confirmNam
 }
 
 export function registerNetworkTools(server: McpServer, client: IUnifiClient): void {
-  server.tool('list_networks', 'List all networks and VLANs.',
+  server.tool(
+    'list_networks',
+    'List all networks and VLANs.',
     { limit: limitSchema },
-    async (p) => { try { return toolResult(await listNetworks(client, p)); } catch (e) { return toolError(e); } });
+    async (p) => {
+      try {
+        return toolResult(await listNetworks(client, p));
+      } catch (e) {
+        return toolError(e);
+      }
+    }
+  );
 
-  server.tool('get_network', 'Get a network by ID.',
-    { id: z.string() },
-    async ({ id }) => { try { return toolResult(await getNetwork(client, id)); } catch (e) { return toolError(e); } });
+  server.tool('get_network', 'Get a network by ID.', { id: z.string() }, async ({ id }) => {
+    try {
+      return toolResult(await getNetwork(client, id));
+    } catch (e) {
+      return toolError(e);
+    }
+  });
 
-  server.tool('create_network', 'Create a network. Required: name, ip_subnet (CIDR). Optional: vlan_id, dhcpd_enabled, purpose.',
+  server.tool(
+    'create_network',
+    'Create a network. Required: name, ip_subnet (CIDR). Optional: vlan_id, dhcpd_enabled, purpose.',
     { network: z.record(z.unknown()) },
-    async ({ network }) => { try { return toolResult(await createNetwork(client, network)); } catch (e) { return toolError(e); } });
+    async ({ network }) => {
+      try {
+        return toolResult(await createNetwork(client, network));
+      } catch (e) {
+        return toolError(e);
+      }
+    }
+  );
 
-  server.tool('update_network', 'Update a network by ID. Only provide fields to change.',
+  server.tool(
+    'update_network',
+    'Update a network by ID. Only provide fields to change.',
     { id: z.string(), updates: z.record(z.unknown()) },
-    async ({ id, updates }) => { try { return toolResult(await updateNetwork(client, id, updates)); } catch (e) { return toolError(e); } });
+    async ({ id, updates }) => {
+      try {
+        return toolResult(await updateNetwork(client, id, updates));
+      } catch (e) {
+        return toolError(e);
+      }
+    }
+  );
 
-  server.tool('delete_network',
+  server.tool(
+    'delete_network',
     'Delete a network by ID. DESTRUCTIVE: disconnects all devices on the network. Must pass confirm_name matching the network name exactly.',
     { id: z.string(), confirm_name: z.string().describe('Must exactly match the network name') },
-    async ({ id, confirm_name }) => { try { return toolResult(await deleteNetwork(client, id, confirm_name)); } catch (e) { return toolError(e); } });
+    async ({ id, confirm_name }) => {
+      try {
+        return toolResult(await deleteNetwork(client, id, confirm_name));
+      } catch (e) {
+        return toolError(e);
+      }
+    }
+  );
 }

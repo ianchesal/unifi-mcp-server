@@ -1,9 +1,9 @@
-import express, { type Request, type Response, type NextFunction } from 'express';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import type { Config } from './config.js';
-import type { IUnifiClient } from './unifi/client.js';
 import { registerAllTools } from './tools/index.js';
+import type { IUnifiClient } from './unifi/client.js';
 
 export function createApp(client: IUnifiClient, config: Config) {
   const app = express();

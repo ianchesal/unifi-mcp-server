@@ -35,9 +35,9 @@ export function loadConfig(): Config {
   const logLevel = rawLogLevel as Config['logLevel'];
 
   return {
-    unifiHost: process.env.UNIFI_HOST!,
-    unifiApiKey: process.env.UNIFI_API_KEY!,
-    mcpSecret: process.env.MCP_SECRET!,
+    unifiHost: process.env.UNIFI_HOST ?? '',
+    unifiApiKey: process.env.UNIFI_API_KEY ?? '',
+    mcpSecret: process.env.MCP_SECRET ?? '',
     unifiSite: process.env.UNIFI_SITE ?? 'default',
     unifiVerifyTls: process.env.UNIFI_VERIFY_TLS === 'true',
     unifiRequestTimeoutMs: parseIntEnv('UNIFI_REQUEST_TIMEOUT_MS', 10000),

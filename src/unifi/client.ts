@@ -47,7 +47,7 @@ export class UnifiClient implements IUnifiClient {
         headers: {
           'X-API-Key': this.config.apiKey,
           'Content-Type': 'application/json',
-          ...(options.headers as Record<string, string> ?? {}),
+          ...((options.headers as Record<string, string>) ?? {}),
         },
       });
       if (!response.ok) {
@@ -102,9 +102,12 @@ export class UnifiClient implements IUnifiClient {
   }
 
   async delete(path: string): Promise<void> {
-    const result = await this.request<UnifiV1Response<never> | undefined>(`${this.v1Base}/${path}`, {
-      method: 'DELETE',
-    });
+    const result = await this.request<UnifiV1Response<never> | undefined>(
+      `${this.v1Base}/${path}`,
+      {
+        method: 'DELETE',
+      }
+    );
     if (result) this.checkRc(result);
   }
 
@@ -118,7 +121,8 @@ export class UnifiClient implements IUnifiClient {
 
   async v2getOne<T>(path: string): Promise<T> {
     const items = await this.v2get<T>(path);
-    if (!Array.isArray(items) || items.length === 0) throw new Error(`UniFi v2 API: no result for path '${path}'`);
+    if (!Array.isArray(items) || items.length === 0)
+      throw new Error(`UniFi v2 API: no result for path '${path}'`);
     return items[0];
   }
 

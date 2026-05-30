@@ -1,14 +1,15 @@
 // src/tools/clients.ts
-import { z } from 'zod';
+
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { z } from 'zod';
 import type { IUnifiClient } from '../unifi/client.js';
-import { toolResult, toolError, toolLogger } from './util.js';
+import { toolError, toolLogger, toolResult } from './util.js';
 
 const limitSchema = z.number().int().min(1).max(500).default(100).optional();
 
 export async function listClients(
   client: IUnifiClient,
-  params: { include_offline?: boolean; limit?: number },
+  params: { include_offline?: boolean; limit?: number }
 ) {
   const endpoint = params.include_offline ? 'stat/alluser' : 'stat/sta';
   const all = await client.get<Record<string, unknown>>(endpoint);
@@ -46,10 +47,11 @@ async function findUserByMac(client: IUnifiClient, mac: string) {
 export async function setClientFixedIp(client: IUnifiClient, mac: string, ip: string) {
   toolLogger.info(`set_client_fixed_ip: setting ${mac} -> ${ip}`);
   const user = await findUserByMac(client, mac);
-  const updated = await client.put<Record<string, unknown>>(
-    `rest/user/${user._id}`,
-    { ...user, use_fixedip: true, fixed_ip: ip },
-  );
+  const updated = await client.put<Record<string, unknown>>(`rest/user/${user._id}`, {
+    ...user,
+    use_fixedip: true,
+    fixed_ip: ip,
+  });
   toolLogger.info(`set_client_fixed_ip: set fixed IP for ${mac}`);
   return updated[0];
 }
@@ -57,37 +59,91 @@ export async function setClientFixedIp(client: IUnifiClient, mac: string, ip: st
 export async function removeClientFixedIp(client: IUnifiClient, mac: string) {
   toolLogger.info(`remove_client_fixed_ip: clearing ${mac}`);
   const user = await findUserByMac(client, mac);
-  const updated = await client.put<Record<string, unknown>>(
-    `rest/user/${user._id}`,
-    { ...user, use_fixedip: false, fixed_ip: '' },
-  );
+  const updated = await client.put<Record<string, unknown>>(`rest/user/${user._id}`, {
+    ...user,
+    use_fixedip: false,
+    fixed_ip: '',
+  });
   toolLogger.info(`remove_client_fixed_ip: cleared fixed IP for ${mac}`);
   return updated[0];
 }
 
 export function registerClientTools(server: McpServer, client: IUnifiClient): void {
-  server.tool('list_clients',
+  server.tool(
+    'list_clients',
     'List network clients. include_offline=true includes recently seen offline clients.',
     { include_offline: z.boolean().default(false).optional(), limit: limitSchema },
-    async (p) => { try { return toolResult(await listClients(client, p)); } catch (e) { return toolError(e); } });
+    async (p) => {
+      try {
+        return toolResult(await listClients(client, p));
+      } catch (e) {
+        return toolError(e);
+      }
+    }
+  );
 
-  server.tool('get_client', 'Get details for a connected client by MAC address.',
+  server.tool(
+    'get_client',
+    'Get details for a connected client by MAC address.',
     { mac: z.string() },
-    async ({ mac }) => { try { return toolResult(await getClient(client, mac)); } catch (e) { return toolError(e); } });
+    async ({ mac }) => {
+      try {
+        return toolResult(await getClient(client, mac));
+      } catch (e) {
+        return toolError(e);
+      }
+    }
+  );
 
-  server.tool('block_client', 'Block a client from the network by MAC address.',
+  server.tool(
+    'block_client',
+    'Block a client from the network by MAC address.',
     { mac: z.string() },
-    async ({ mac }) => { try { return toolResult(await blockClient(client, mac)); } catch (e) { return toolError(e); } });
+    async ({ mac }) => {
+      try {
+        return toolResult(await blockClient(client, mac));
+      } catch (e) {
+        return toolError(e);
+      }
+    }
+  );
 
-  server.tool('unblock_client', 'Unblock a previously blocked client by MAC address.',
+  server.tool(
+    'unblock_client',
+    'Unblock a previously blocked client by MAC address.',
     { mac: z.string() },
-    async ({ mac }) => { try { return toolResult(await unblockClient(client, mac)); } catch (e) { return toolError(e); } });
+    async ({ mac }) => {
+      try {
+        return toolResult(await unblockClient(client, mac));
+      } catch (e) {
+        return toolError(e);
+      }
+    }
+  );
 
-  server.tool('set_client_fixed_ip', 'Assign a fixed/static IP address to a client by MAC.',
+  server.tool(
+    'set_client_fixed_ip',
+    'Assign a fixed/static IP address to a client by MAC.',
     { mac: z.string(), ip: z.string() },
-    async ({ mac, ip }) => { try { return toolResult(await setClientFixedIp(client, mac, ip)); } catch (e) { return toolError(e); } });
+    async ({ mac, ip }) => {
+      try {
+        return toolResult(await setClientFixedIp(client, mac, ip));
+      } catch (e) {
+        return toolError(e);
+      }
+    }
+  );
 
-  server.tool('remove_client_fixed_ip', 'Remove the fixed IP assignment from a client.',
+  server.tool(
+    'remove_client_fixed_ip',
+    'Remove the fixed IP assignment from a client.',
     { mac: z.string() },
-    async ({ mac }) => { try { return toolResult(await removeClientFixedIp(client, mac)); } catch (e) { return toolError(e); } });
+    async ({ mac }) => {
+      try {
+        return toolResult(await removeClientFixedIp(client, mac));
+      } catch (e) {
+        return toolError(e);
+      }
+    }
+  );
 }

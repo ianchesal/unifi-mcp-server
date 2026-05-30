@@ -12,9 +12,14 @@ export interface Logger {
 export function createLogger(level: LogLevel): Logger {
   const threshold = LEVELS[level];
   return {
-    error: (msg, ...args) => threshold >= LEVELS.error && console.error(`[ERROR] ${new Date().toISOString()}`, msg, ...args),
-    warn:  (msg, ...args) => threshold >= LEVELS.warn  && console.warn( `[WARN]  ${new Date().toISOString()}`, msg, ...args),
-    info:  (msg, ...args) => threshold >= LEVELS.info  && console.log(  `[INFO]  ${new Date().toISOString()}`, msg, ...args),
-    debug: (msg, ...args) => threshold >= LEVELS.debug && console.log(  `[DEBUG] ${new Date().toISOString()}`, msg, ...args),
+    error: (msg, ...args) =>
+      threshold >= LEVELS.error &&
+      console.error(`[ERROR] ${new Date().toISOString()}`, msg, ...args),
+    warn: (msg, ...args) =>
+      threshold >= LEVELS.warn && console.warn(`[WARN]  ${new Date().toISOString()}`, msg, ...args),
+    info: (msg, ...args) =>
+      threshold >= LEVELS.info && console.log(`[INFO]  ${new Date().toISOString()}`, msg, ...args),
+    debug: (msg, ...args) =>
+      threshold >= LEVELS.debug && console.log(`[DEBUG] ${new Date().toISOString()}`, msg, ...args),
   };
 }
