@@ -79,7 +79,7 @@ export function registerNetworkTools(server: McpServer, client: IUnifiClient): v
   server.tool(
     'create_network',
     'Create a network. Required: name, ip_subnet (CIDR). Optional: vlan_id, dhcpd_enabled, purpose.',
-    { network: z.record(z.unknown()) },
+    { network: z.record(z.string(), z.unknown()) },
     async ({ network }) => {
       try {
         return toolResult(await createNetwork(client, network));
@@ -92,7 +92,7 @@ export function registerNetworkTools(server: McpServer, client: IUnifiClient): v
   server.tool(
     'update_network',
     'Update a network by ID. Only provide fields to change.',
-    { id: z.string(), updates: z.record(z.unknown()) },
+    { id: z.string(), updates: z.record(z.string(), z.unknown()) },
     async ({ id, updates }) => {
       try {
         return toolResult(await updateNetwork(client, id, updates));

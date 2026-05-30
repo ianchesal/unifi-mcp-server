@@ -58,7 +58,7 @@ export function registerTrafficTools(server: McpServer, client: IUnifiClient): v
   server.tool(
     'create_traffic_rule',
     'Create a traffic rule. Required: description, action, matching_target. See UniFi docs for full schema.',
-    { rule: z.record(z.unknown()) },
+    { rule: z.record(z.string(), z.unknown()) },
     async ({ rule }) => {
       try {
         return toolResult(await createTrafficRule(client, rule));
@@ -71,7 +71,7 @@ export function registerTrafficTools(server: McpServer, client: IUnifiClient): v
   server.tool(
     'update_traffic_rule',
     'Update a traffic rule by ID. Only provide fields to change.',
-    { id: z.string(), updates: z.record(z.unknown()) },
+    { id: z.string(), updates: z.record(z.string(), z.unknown()) },
     async ({ id, updates }) => {
       try {
         return toolResult(await updateTrafficRule(client, id, updates));
