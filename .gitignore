@@ -3,4 +3,5 @@ dist/
 .env
 *.env
 coverage/
+docs/superpowers/
 spec-review.md
