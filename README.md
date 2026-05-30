@@ -23,7 +23,7 @@ docker compose up -d
 
 ### 4. Add to Claude Code
 
-In your Claude Code MCP config (`~/.claude/mcp_servers.json` or project `.mcp.json`):
+In your Claude Code MCP config (project `.mcp.json` or via `/mcp add` in Claude Code):
 
 ```json
 {
