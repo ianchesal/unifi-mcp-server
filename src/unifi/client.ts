@@ -102,10 +102,10 @@ export class UnifiClient implements IUnifiClient {
   }
 
   async delete(path: string): Promise<void> {
-    const result = await this.request<UnifiV1Response<never>>(`${this.v1Base}/${path}`, {
+    const result = await this.request<UnifiV1Response<never> | undefined>(`${this.v1Base}/${path}`, {
       method: 'DELETE',
     });
-    this.checkRc(result);
+    if (result) this.checkRc(result);
   }
 
   async cmd(cmdPath: string, body: unknown): Promise<void> {

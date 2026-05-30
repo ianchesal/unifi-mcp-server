@@ -34,7 +34,7 @@ export function createApp(client: IUnifiClient, config: Config) {
     }
   });
 
-  app.post('/mcp', authMiddleware, async (req, res) => {
+  app.post('/mcp', authMiddleware, async (req, res, next) => {
     const mcpServer = new McpServer({ name: 'unifi-mcp-server', version: '1.0.0' });
     registerAllTools(mcpServer, client);
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
@@ -42,8 +42,12 @@ export function createApp(client: IUnifiClient, config: Config) {
       transport.close();
       mcpServer.close();
     });
-    await mcpServer.connect(transport);
-    await transport.handleRequest(req, res, req.body);
+    try {
+      await mcpServer.connect(transport);
+      await transport.handleRequest(req, res, req.body);
+    } catch (err) {
+      next(err);
+    }
   });
 
   return app;
