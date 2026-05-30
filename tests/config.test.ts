@@ -19,6 +19,13 @@ describe('loadConfig', () => {
     expect(() => loadConfig()).toThrow('UNIFI_HOST');
   });
 
+  it('throws if UNIFI_HOST is empty string', () => {
+    process.env.UNIFI_HOST = '';
+    process.env.UNIFI_API_KEY = 'key';
+    process.env.MCP_SECRET = 'secret';
+    expect(() => loadConfig()).toThrow('UNIFI_HOST');
+  });
+
   it('throws if UNIFI_API_KEY is missing', () => {
     process.env.UNIFI_HOST = '192.168.1.1';
     delete process.env.UNIFI_API_KEY;
@@ -64,5 +71,21 @@ describe('loadConfig', () => {
     expect(config.mcpPort).toBe(8080);
     expect(config.mcpHost).toBe('127.0.0.1');
     expect(config.logLevel).toBe('debug');
+  });
+
+  it('throws if MCP_PORT is not a valid number', () => {
+    process.env.UNIFI_HOST = '192.168.1.1';
+    process.env.UNIFI_API_KEY = 'key';
+    process.env.MCP_SECRET = 'secret';
+    process.env.MCP_PORT = 'not-a-number';
+    expect(() => loadConfig()).toThrow('MCP_PORT');
+  });
+
+  it('throws if LOG_LEVEL is invalid', () => {
+    process.env.UNIFI_HOST = '192.168.1.1';
+    process.env.UNIFI_API_KEY = 'key';
+    process.env.MCP_SECRET = 'secret';
+    process.env.LOG_LEVEL = 'verbose';
+    expect(() => loadConfig()).toThrow('LOG_LEVEL');
   });
 });

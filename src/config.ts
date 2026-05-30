@@ -10,12 +10,29 @@ export interface Config {
   logLevel: 'error' | 'warn' | 'info' | 'debug';
 }
 
+function parseIntEnv(key: string, defaultValue: number): number {
+  const raw = process.env[key];
+  if (!raw) return defaultValue;
+  const parsed = parseInt(raw, 10);
+  if (Number.isNaN(parsed)) {
+    throw new Error(`Environment variable ${key} must be a number, got: "${raw}"`);
+  }
+  return parsed;
+}
+
 export function loadConfig(): Config {
   const required = ['UNIFI_HOST', 'UNIFI_API_KEY', 'MCP_SECRET'];
-  const missing = required.filter((k) => !process.env[k]);
+  const missing = required.filter((k) => !process.env[k]?.trim());
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
+
+  const validLevels = ['error', 'warn', 'info', 'debug'] as const;
+  const rawLogLevel = process.env.LOG_LEVEL ?? 'info';
+  if (!validLevels.includes(rawLogLevel as Config['logLevel'])) {
+    throw new Error(`LOG_LEVEL must be one of: ${validLevels.join(', ')}, got: "${rawLogLevel}"`);
+  }
+  const logLevel = rawLogLevel as Config['logLevel'];
 
   return {
     unifiHost: process.env.UNIFI_HOST!,
@@ -23,9 +40,9 @@ export function loadConfig(): Config {
     mcpSecret: process.env.MCP_SECRET!,
     unifiSite: process.env.UNIFI_SITE ?? 'default',
     unifiVerifyTls: process.env.UNIFI_VERIFY_TLS === 'true',
-    unifiRequestTimeoutMs: parseInt(process.env.UNIFI_REQUEST_TIMEOUT_MS ?? '10000', 10),
-    mcpPort: parseInt(process.env.MCP_PORT ?? '3000', 10),
+    unifiRequestTimeoutMs: parseIntEnv('UNIFI_REQUEST_TIMEOUT_MS', 10000),
+    mcpPort: parseIntEnv('MCP_PORT', 3000),
     mcpHost: process.env.MCP_HOST ?? '0.0.0.0',
-    logLevel: (process.env.LOG_LEVEL ?? 'info') as Config['logLevel'],
+    logLevel,
   };
 }
