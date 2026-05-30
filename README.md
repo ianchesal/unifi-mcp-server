@@ -1,6 +1,6 @@
 # UniFi MCP Server
 
-MCP server for the UniFi UDM Pro API. Exposes firewall, network, client, traffic, port forwarding, and threat analysis tools to Claude Code via Streamable HTTP transport.
+MCP server for the UniFi UDM Pro API. Exposes firewall, network, client, traffic, port forwarding, and monitoring tools to Claude Code via Streamable HTTP transport.
 
 ## Setup
 
@@ -63,7 +63,7 @@ Integration tests for mutation tools create objects prefixed with `mcp-test-` an
 | Traffic Rules | list/create/update/delete (UniFi v2 API) |
 | Port Forwarding | list/create/update/delete |
 | Monitoring | site stats, device health |
-| Security | get_threat_events, get_network_events, analyze_threats |
+| Security | get_network_events |
 
 ## Environment Variables
 
