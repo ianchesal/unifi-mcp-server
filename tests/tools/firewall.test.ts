@@ -60,6 +60,11 @@ describe('getFirewallRule', () => {
     expect(result._id).toBe('abc');
     expect(client.get).toHaveBeenCalledWith('rest/firewallrule/abc');
   });
+
+  it('throws if rule not found', async () => {
+    const client = makeClient({ get: vi.fn().mockResolvedValue([]) });
+    await expect(getFirewallRule(client, 'missing-id')).rejects.toThrow('not found');
+  });
 });
 
 describe('createFirewallRule', () => {
@@ -100,6 +105,30 @@ describe('listFirewallGroups', () => {
     const client = makeClient({ get: vi.fn().mockResolvedValue(groups) });
     const result = await listFirewallGroups(client, {});
     expect(result.total).toBe(2);
+  });
+});
+
+describe('createFirewallGroup', () => {
+  it('posts group and returns created object', async () => {
+    const created = { _id: 'grp-new', name: 'my-group', group_type: 'address-group' };
+    const client = makeClient({ post: vi.fn().mockResolvedValue([created]) });
+    const result = await createFirewallGroup(client, { name: 'my-group', group_type: 'address-group', group_members: [] });
+    expect(result._id).toBe('grp-new');
+    expect(client.post).toHaveBeenCalledWith('rest/firewallgroup', expect.objectContaining({ name: 'my-group' }));
+  });
+});
+
+describe('updateFirewallGroup', () => {
+  it('reads current, merges, and puts', async () => {
+    const current = { _id: 'grp-id', name: 'old-name', group_type: 'address-group', group_members: ['1.2.3.4'] };
+    const updated = [{ ...current, name: 'new-name' }];
+    const client = makeClient({
+      get: vi.fn().mockResolvedValue([current]),
+      put: vi.fn().mockResolvedValue(updated),
+    });
+    const result = await updateFirewallGroup(client, 'grp-id', { name: 'new-name' });
+    expect(result.name).toBe('new-name');
+    expect(client.put).toHaveBeenCalledWith('rest/firewallgroup/grp-id', { ...current, name: 'new-name' });
   });
 });
 
