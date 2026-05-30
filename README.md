@@ -2,23 +2,30 @@
 
 MCP server for the UniFi UDM Pro API. Exposes firewall, network, client, traffic, port forwarding, and monitoring tools to Claude Code via Streamable HTTP transport.
 
-## Setup
+## Quick Start (Official Docker Image)
+
+No repo clone needed — pull the published image directly from the GitHub Container Registry.
 
 ### 1. Generate an API key on your UDM Pro
 
 UniFi OS → Settings → Control Plane → API → Create API Key
 
-### 2. Configure
+### 2. Create a `.env` file
 
 ```bash
-cp .env.example .env
-# Edit .env with your UDM Pro IP, API key, and a strong MCP_SECRET
+UNIFI_HOST=<your-udm-pro-ip>
+UNIFI_API_KEY=<your-api-key>
+MCP_SECRET=<choose-a-strong-secret>
 ```
 
-### 3. Run
+### 3. Run the container
 
 ```bash
-docker compose up -d
+docker run -d \
+  --name unifi-mcp \
+  --env-file .env \
+  -p 3000:3000 \
+  ghcr.io/ianchesal/unifi-mcp-server:latest
 ```
 
 ### 4. Add to Claude Code
@@ -36,22 +43,6 @@ In your Claude Code MCP config (project `.mcp.json` or via `/mcp add` in Claude 
   }
 }
 ```
-
-## Development
-
-```bash
-npm install
-npm test          # run unit tests
-npm run dev       # run with --watch (requires .env)
-```
-
-## Integration tests (requires real UDM Pro)
-
-```bash
-TEST_INTEGRATION=true npm test
-```
-
-Integration tests for mutation tools create objects prefixed with `mcp-test-` and delete them in teardown. Tests never operate on existing production objects.
 
 ## Tools
 
@@ -78,3 +69,38 @@ Integration tests for mutation tools create objects prefixed with `mcp-test-` an
 | `MCP_PORT` | no | `3000` | Port the server listens on |
 | `MCP_HOST` | no | `0.0.0.0` | Interface the server binds to |
 | `LOG_LEVEL` | no | `info` | `error` \| `warn` \| `info` \| `debug` |
+
+---
+
+## Development (Running from a Repo Clone)
+
+### Setup
+
+```bash
+git clone https://github.com/ianchesal/unifi-mcp-server
+cd unifi-mcp-server
+cp .env.example .env
+# Edit .env with your UDM Pro IP, API key, and a strong MCP_SECRET
+```
+
+### Run with Docker Compose
+
+```bash
+docker compose up -d
+```
+
+### Run locally
+
+```bash
+npm install
+npm test          # run unit tests
+npm run dev       # run with --watch (requires .env)
+```
+
+### Integration tests (requires real UDM Pro)
+
+```bash
+TEST_INTEGRATION=true npm test
+```
+
+Integration tests for mutation tools create objects prefixed with `mcp-test-` and delete them in teardown. Tests never operate on existing production objects.
