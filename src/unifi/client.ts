@@ -53,6 +53,9 @@ export class UnifiClient implements IUnifiClient {
       if (!response.ok) {
         throw new Error(`UniFi API HTTP ${response.status}: ${response.statusText}`);
       }
+      if (response.status === 204 || response.headers.get('content-length') === '0') {
+        return undefined as T;
+      }
       return response.json() as Promise<T>;
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {

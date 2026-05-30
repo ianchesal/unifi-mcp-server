@@ -14,6 +14,7 @@ function mockFetch(response: unknown, status = 200) {
     ok: status >= 200 && status < 300,
     status,
     statusText: status === 200 ? 'OK' : 'Error',
+    headers: { get: () => null },
     json: async () => response,
   });
 }
@@ -106,5 +107,17 @@ describe('UnifiClient', () => {
     await client.v2get('trafficrules');
     const [url] = fetchMock.mock.calls[0] as [string];
     expect(url).toBe('https://192.168.1.1/proxy/network/v2/api/site/default/trafficrules');
+  });
+
+  it('v2delete() does not throw on 204 No Content', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      statusText: 'No Content',
+      headers: { get: () => null },
+      json: async () => { throw new SyntaxError('Unexpected end of JSON input'); },
+    });
+    const client = new UnifiClient(baseConfig);
+    await expect(client.v2delete('trafficrules/r1')).resolves.toBeUndefined();
   });
 });
