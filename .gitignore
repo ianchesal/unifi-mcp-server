@@ -1,6 +1,8 @@
 node_modules/
 dist/
 .env
+.claude/settings.local.json
+.mcp.json
 *.env
 coverage/
 docs/superpowers/
