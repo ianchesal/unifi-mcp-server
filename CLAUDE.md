@@ -38,3 +38,21 @@ docker compose up -d        # production run
 ## Integration tests
 
 Integration tests use a real UDM Pro. Mutation tests create objects prefixed `mcp-test-` and delete them in `afterAll`. They never touch production objects.
+
+## Cutting a release
+
+Releases are tag-driven. Pushing a `v*` tag to GitHub triggers `.github/workflows/release.yml`, which:
+- Builds and pushes a Docker image to `ghcr.io/ianchesal/unifi-mcp-server` (tagged `latest`, `{major}.{minor}`, and `{version}`)
+- Makes the container package public
+- Creates a GitHub Release with auto-generated notes
+
+**Steps to release:**
+
+1. Ensure all changes are merged to `main` and CI is green.
+2. Decide the new version (follows semver: `MAJOR.MINOR.PATCH`).
+3. Update `"version"` in `package.json` to the new version.
+4. Commit: `git commit -m "chore: release v{version}" package.json`
+5. Tag: `git tag v{version}`
+6. Push both: `git push origin main && git push origin v{version}`
+
+The release workflow fires automatically on the tag push. No manual Docker build or GitHub Release creation needed.
