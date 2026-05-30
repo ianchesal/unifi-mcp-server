@@ -154,9 +154,17 @@ unifi-mcp-server/
 
 ## Testing
 
+- **Framework:** Vitest (fast, native TypeScript, no separate ts-jest config needed)
 - **Unit tests:** each tool handler tested with mocked UniFi client responses — validates input schemas, response normalization, error handling
 - **Integration tests:** opt-in via `TEST_INTEGRATION=true` env var, hits real UDM Pro — skipped in CI, run manually against homelab
 - No MCP protocol end-to-end tests in v1
+
+## Key Dependencies
+
+- `@modelcontextprotocol/sdk` — official MCP TypeScript SDK (Streamable HTTP transport)
+- `node-fetch` or native `fetch` (Node 22 built-in) — UniFi HTTP client
+- `zod` — tool input schema validation
+- `vitest` — test framework
 
 ## Claude Code Setup
 
