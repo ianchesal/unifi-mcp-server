@@ -11,7 +11,7 @@ export async function getNetworkEvents(
   client: IUnifiClient,
   params: { key_filter?: string; limit?: number }
 ) {
-  const all = await client.get<Record<string, unknown>>('stat/event');
+  const all = await client.get<Record<string, unknown>>('list/alarm');
   const filtered = params.key_filter
     ? all.filter((e) => String(e.key ?? '').includes(params.key_filter ?? ''))
     : all;
@@ -21,7 +21,7 @@ export async function getNetworkEvents(
 export function registerSecurityTools(server: McpServer, client: IUnifiClient): void {
   server.tool(
     'get_network_events',
-    'Get network events (client connections, DHCP, admin actions). Optional: key_filter (e.g. "EVT_WC_Connected"), limit.',
+    'Get network alarms/alerts (e.g. IPS/IDS blocks, rogue AP detected, admin actions). Optional: key_filter (e.g. "EVT_WC_Connected"), limit.',
     { key_filter: z.string().optional(), limit: limitSchema },
     async (p) => {
       try {

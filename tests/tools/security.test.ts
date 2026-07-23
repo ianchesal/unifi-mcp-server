@@ -13,11 +13,11 @@ function makeClient(overrides: Partial<IUnifiClient> = {}): IUnifiClient {
 }
 
 describe('getNetworkEvents', () => {
-  it('fetches network events', async () => {
+  it('fetches network alarms', async () => {
     const events = [{ _id: 'e1', key: 'EVT_WC_Connected', msg: 'device joined' }];
     const client = makeClient({ get: vi.fn().mockResolvedValue(events) });
     const result = await getNetworkEvents(client, {});
-    expect(client.get).toHaveBeenCalledWith('stat/event');
+    expect(client.get).toHaveBeenCalledWith('list/alarm');
     expect(result.total).toBe(1);
   });
 });
