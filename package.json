@@ -2,7 +2,7 @@
   "name": "unifi-mcp-server",
   "version": "1.0.1",
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "type": "module",
   "scripts": {
