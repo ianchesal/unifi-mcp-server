@@ -29,7 +29,7 @@ docker compose up -d        # production run
 | `traffic.ts` | list/create/update/delete traffic rules (v2 API) |
 | `ports.ts` | list/create/update/delete port forwards |
 | `monitoring.ts` | get_site_stats, get_device_health |
-| `security.ts` | get_network_events |
+| `security.ts` | get_network_events, get_rogue_aps |
 
 ## Known API limitations
 
