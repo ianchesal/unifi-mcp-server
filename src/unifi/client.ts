@@ -1,3 +1,5 @@
+import { Agent } from 'undici';
+
 export interface UnifiClientConfig {
   host: string;
   apiKey: string;
@@ -28,10 +30,11 @@ interface UnifiV1Response<T> {
 export class UnifiClient implements IUnifiClient {
   private v1Base: string;
   private v2Base: string;
+  private dispatcher?: Agent;
 
   constructor(private config: UnifiClientConfig) {
     if (!config.verifyTls) {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+      this.dispatcher = new Agent({ connect: { rejectUnauthorized: false } });
     }
     this.v1Base = `https://${config.host}/proxy/network/api/s/${config.site}`;
     this.v2Base = `https://${config.host}/proxy/network/v2/api/site/${config.site}`;
@@ -44,6 +47,7 @@ export class UnifiClient implements IUnifiClient {
       const response = await fetch(url, {
         ...options,
         signal: controller.signal,
+        ...(this.dispatcher ? { dispatcher: this.dispatcher } : {}),
         headers: {
           'X-API-Key': this.config.apiKey,
           'Content-Type': 'application/json',
