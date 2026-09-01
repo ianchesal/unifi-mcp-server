@@ -1,0 +1,10 @@
+# workmux project configuration
+# For global settings, edit ~/.config/workmux/config.yaml
+
+files:
+  # Symlinked (not copied) so new worktrees share the same env values and
+  # installed deps rather than duplicating them.
+  symlink:
+    - .env
+    - node_modules
+    - .mcp.json
