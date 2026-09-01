@@ -2,6 +2,31 @@
 
 MCP server for the UniFi UDM Pro API. Exposes firewall, network, client, traffic, port forwarding, and monitoring tools to Claude Code via Streamable HTTP transport.
 
+## Why this exists
+
+This is the first of three companion projects for running an LLM against a
+UDM Pro:
+
+- **`unifi-mcp-server`** (this project) — exposes the UniFi Network API
+  (firewall rules, networks, clients, traffic rules, port forwarding,
+  monitoring) as MCP tools.
+- [`unifi-siem-sink`](https://github.com/ianchesal/unifi-siem-sink) —
+  listens for UniFi's SIEM/syslog export and stores IPS/IDS and
+  Security-category events (the one thing the Network API doesn't expose)
+  in SQLite, queryable over MCP.
+- [`unifi-siem-lens`](https://github.com/ianchesal/unifi-siem-lens) — sits
+  on top of `unifi-siem-sink`'s event store, running scheduled,
+  code-driven heuristics (new signature/source-IP detection,
+  internal-source flagging, repeat-offender tracking, statistical anomaly
+  detection) against the event history and rendering trends and findings
+  on a dashboard, with a one-click handoff to a Claude Code session for
+  deeper analysis.
+
+Run all three and an LLM gets full visibility into the network (via this
+project), full visibility into the security event stream (via
+`unifi-siem-sink`), and a standing analyst that's already triaged the noise
+before you ever open a chat (via `unifi-siem-lens`).
+
 ## Quick Start (Official Docker Image)
 
 No repo clone needed — pull the published image directly from the GitHub Container Registry.
