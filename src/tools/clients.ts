@@ -19,6 +19,7 @@ const CLIENT_SUMMARY_FIELDS = [
   'name',
   'hostname',
   'ip',
+  'last_ip',
   'network',
   'is_wired',
   'essid',
@@ -99,7 +100,7 @@ export async function removeClientFixedIp(client: IUnifiClient, mac: string) {
 export function registerClientTools(server: McpServer, client: IUnifiClient): void {
   server.tool(
     'list_clients',
-    'List network clients. include_offline=true includes recently seen offline clients. Returns a compact summary per client (mac, name, hostname, ip, network, uplink, signal, uptime, ...); pass fields to choose specific keys or verbose=true for full objects. Use get_client for full detail on one client.',
+    'List network clients. include_offline=true includes recently seen offline clients. Returns a compact summary per client (mac, name, hostname, ip, last_ip (the only IP offline clients carry), network, uplink, signal, uptime, ...); pass fields to choose specific keys or verbose=true for full objects. Use get_client for full detail on one client.',
     {
       include_offline: z.boolean().default(false).optional(),
       limit: limitSchema,
