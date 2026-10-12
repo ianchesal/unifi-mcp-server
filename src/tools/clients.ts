@@ -3,17 +3,45 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { IUnifiClient } from '../unifi/client.js';
-import { toolError, toolLogger, toolResult } from './util.js';
+import {
+  type ProjectionParams,
+  project,
+  projectionSchema,
+  toolError,
+  toolLogger,
+  toolResult,
+} from './util.js';
 
 const limitSchema = z.number().int().min(1).max(500).default(100).optional();
 
+const CLIENT_SUMMARY_FIELDS = [
+  'mac',
+  'name',
+  'hostname',
+  'ip',
+  'network',
+  'is_wired',
+  'essid',
+  'signal',
+  'last_uplink_name',
+  'uptime',
+  'last_seen',
+  'oui',
+  'use_fixedip',
+  'fixed_ip',
+  'blocked',
+] as const;
+
 export async function listClients(
   client: IUnifiClient,
-  params: { include_offline?: boolean; limit?: number }
+  params: { include_offline?: boolean; limit?: number } & ProjectionParams
 ) {
   const endpoint = params.include_offline ? 'stat/alluser' : 'stat/sta';
   const all = await client.get<Record<string, unknown>>(endpoint);
-  return { total: all.length, data: all.slice(0, params.limit ?? 100) };
+  return {
+    total: all.length,
+    data: project(all.slice(0, params.limit ?? 100), params, CLIENT_SUMMARY_FIELDS),
+  };
 }
 
 export async function getClient(client: IUnifiClient, mac: string) {
@@ -71,8 +99,12 @@ export async function removeClientFixedIp(client: IUnifiClient, mac: string) {
 export function registerClientTools(server: McpServer, client: IUnifiClient): void {
   server.tool(
     'list_clients',
-    'List network clients. include_offline=true includes recently seen offline clients.',
-    { include_offline: z.boolean().default(false).optional(), limit: limitSchema },
+    'List network clients. include_offline=true includes recently seen offline clients. Returns a compact summary per client (mac, name, hostname, ip, network, uplink, signal, uptime, ...); pass fields to choose specific keys or verbose=true for full objects. Use get_client for full detail on one client.',
+    {
+      include_offline: z.boolean().default(false).optional(),
+      limit: limitSchema,
+      ...projectionSchema,
+    },
     async (p) => {
       try {
         return toolResult(await listClients(client, p));

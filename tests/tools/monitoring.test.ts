@@ -31,4 +31,14 @@ describe('getDeviceHealth', () => {
     expect(result).toHaveLength(1);
     expect(result[0].name).toBe('UDM Pro');
   });
+
+  it('drops bulky fields by default and honours fields/verbose', async () => {
+    const devices = [{ name: 'UDM Pro', state: 1, port_table: [{ port_idx: 1 }] }];
+    const client = makeClient({ get: vi.fn().mockResolvedValue(devices) });
+    expect(await getDeviceHealth(client)).toEqual([{ name: 'UDM Pro', state: 1 }]);
+    expect(await getDeviceHealth(client, { fields: ['port_table'] })).toEqual([
+      { port_table: [{ port_idx: 1 }] },
+    ]);
+    expect(await getDeviceHealth(client, { verbose: true })).toEqual(devices);
+  });
 });

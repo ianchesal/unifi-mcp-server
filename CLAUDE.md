@@ -33,7 +33,9 @@ docker compose up -d        # production run
 
 ## Known API limitations
 
-**IPS/IDS events are not available.** The UniFi Network Local API (v10.x) does not expose IPS/IDS threat events. The `stat/ips/event` endpoint was removed in firmware 10.x and no replacement has been documented. `get_threat_events` and `analyze_threats` were removed from this server because they cannot work. That gap is filled by two companion projects instead: [`unifi-siem-sink`](https://github.com/ianchesal/unifi-siem-sink) ingests UniFi's SIEM/syslog export and stores IPS/IDS events in SQLite over MCP, and [`unifi-siem-lens`](https://github.com/ianchesal/unifi-siem-lens) runs heuristics/dashboards on top of that store.
+**IPS/IDS events are not available.** The UniFi Network Local API (v10.x) does not expose IPS/IDS threat events. The `stat/ips/event` endpoint was removed in firmware 10.x and no replacement has been documented. `get_threat_events` and `analyze_threats` were removed from this server because they cannot work. (The v2 `system-log/all` endpoint behind `get_network_events` does surface summary-level `THREAT_BLOCKED_V3` entries under `category: ["SECURITY"]`, with source/destination IPs but not signature detail.)
+
+**`list/alarm` is gone.** As of Network 10.x the v1 `list/alarm` endpoint returns `400 api.err.InvalidObject`; `get_network_events` uses v2 `POST system-log/all` (paginated, server-side `categories`/`severities` filters) instead. That gap is filled by two companion projects instead: [`unifi-siem-sink`](https://github.com/ianchesal/unifi-siem-sink) ingests UniFi's SIEM/syslog export and stores IPS/IDS events in SQLite over MCP, and [`unifi-siem-lens`](https://github.com/ianchesal/unifi-siem-lens) runs heuristics/dashboards on top of that store.
 
 ## Integration tests
 

@@ -31,6 +31,26 @@ describe('listClients', () => {
     await listClients(client, { include_offline: true });
     expect(client.get).toHaveBeenCalledWith('stat/alluser');
   });
+
+  const raw = { mac: 'aa:bb:cc:dd:ee:ff', name: 'Laptop', ip: '192.168.1.5', rx_bytes: 1, anomalies: 0 };
+
+  it('returns a compact summary by default', async () => {
+    const client = makeClient({ get: vi.fn().mockResolvedValue([raw]) });
+    const result = await listClients(client, {});
+    expect(result.data[0]).toEqual({ mac: 'aa:bb:cc:dd:ee:ff', name: 'Laptop', ip: '192.168.1.5' });
+  });
+
+  it('returns only requested fields', async () => {
+    const client = makeClient({ get: vi.fn().mockResolvedValue([raw]) });
+    const result = await listClients(client, { fields: ['mac', 'rx_bytes', 'missing'] });
+    expect(result.data[0]).toEqual({ mac: 'aa:bb:cc:dd:ee:ff', rx_bytes: 1 });
+  });
+
+  it('returns full objects when verbose', async () => {
+    const client = makeClient({ get: vi.fn().mockResolvedValue([raw]) });
+    const result = await listClients(client, { verbose: true });
+    expect(result.data[0]).toEqual(raw);
+  });
 });
 
 describe('blockClient', () => {
