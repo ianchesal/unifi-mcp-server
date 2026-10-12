@@ -1,5 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { fetch, type RequestInit } from 'undici';
 import { UnifiClient } from '../../src/unifi/client.js';
+
+vi.mock('undici', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('undici')>()),
+  fetch: vi.fn(),
+}));
 
 const baseConfig = {
   host: '192.168.1.1',
@@ -10,42 +16,35 @@ const baseConfig = {
 };
 
 function mockFetch(response: unknown, status = 200) {
-  return vi.fn().mockResolvedValue({
+  return vi.mocked(fetch).mockResolvedValue({
     ok: status >= 200 && status < 300,
     status,
     statusText: status === 200 ? 'OK' : 'Error',
     headers: { get: () => null },
     json: async () => response,
-  });
+  } as never);
 }
 
 describe('UnifiClient', () => {
-  let originalFetch: typeof global.fetch;
-
   beforeEach(() => {
-    originalFetch = global.fetch;
-  });
-
-  afterEach(() => {
-    global.fetch = originalFetch;
+    vi.mocked(fetch).mockReset();
   });
 
   it('get() strips data envelope and returns array', async () => {
-    global.fetch = mockFetch({ meta: { rc: 'ok' }, data: [{ _id: '1', name: 'rule1' }] });
+    mockFetch({ meta: { rc: 'ok' }, data: [{ _id: '1', name: 'rule1' }] });
     const client = new UnifiClient(baseConfig);
     const result = await client.get('rest/firewallrule');
     expect(result).toEqual([{ _id: '1', name: 'rule1' }]);
   });
 
   it('get() throws when meta.rc is not ok', async () => {
-    global.fetch = mockFetch({ meta: { rc: 'error', msg: 'not found' }, data: [] });
+    mockFetch({ meta: { rc: 'error', msg: 'not found' }, data: [] });
     const client = new UnifiClient(baseConfig);
     await expect(client.get('rest/firewallrule')).rejects.toThrow('not found');
   });
 
   it('get() sends X-API-Key header', async () => {
     const fetchMock = mockFetch({ meta: { rc: 'ok' }, data: [] });
-    global.fetch = fetchMock;
     const client = new UnifiClient(baseConfig);
     await client.get('rest/firewallrule');
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -53,20 +52,19 @@ describe('UnifiClient', () => {
   });
 
   it('get() throws on HTTP error', async () => {
-    global.fetch = mockFetch({ error: 'unauthorized' }, 401);
+    mockFetch({ error: 'unauthorized' }, 401);
     const client = new UnifiClient(baseConfig);
     await expect(client.get('rest/firewallrule')).rejects.toThrow('401');
   });
 
   it('get() throws timeout error on AbortError', async () => {
-    global.fetch = vi.fn().mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }));
+    vi.mocked(fetch).mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }));
     const client = new UnifiClient(baseConfig);
     await expect(client.get('rest/firewallrule')).rejects.toThrow('timed out');
   });
 
   it('post() sends body and returns first data item', async () => {
     const fetchMock = mockFetch({ meta: { rc: 'ok' }, data: [{ _id: 'new-id' }] });
-    global.fetch = fetchMock;
     const client = new UnifiClient(baseConfig);
     const result = await client.post('rest/firewallrule', { name: 'new-rule' });
     expect(result).toEqual([{ _id: 'new-id' }]);
@@ -77,7 +75,6 @@ describe('UnifiClient', () => {
 
   it('delete() sends DELETE request', async () => {
     const fetchMock = mockFetch({ meta: { rc: 'ok' }, data: [] });
-    global.fetch = fetchMock;
     const client = new UnifiClient(baseConfig);
     await client.delete('rest/firewallrule/abc');
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -85,7 +82,7 @@ describe('UnifiClient', () => {
   });
 
   it('v2get() returns array from v2 API', async () => {
-    global.fetch = mockFetch([{ id: '1', description: 'rule' }]);
+    mockFetch([{ id: '1', description: 'rule' }]);
     const client = new UnifiClient(baseConfig);
     const result = await client.v2get('trafficrules');
     expect(result).toEqual([{ id: '1', description: 'rule' }]);
@@ -93,7 +90,6 @@ describe('UnifiClient', () => {
 
   it('uses correct v1 base URL', async () => {
     const fetchMock = mockFetch({ meta: { rc: 'ok' }, data: [] });
-    global.fetch = fetchMock;
     const client = new UnifiClient(baseConfig);
     await client.get('rest/firewallrule');
     const [url] = fetchMock.mock.calls[0] as [string];
@@ -102,7 +98,6 @@ describe('UnifiClient', () => {
 
   it('uses correct v2 base URL', async () => {
     const fetchMock = mockFetch([]);
-    global.fetch = fetchMock;
     const client = new UnifiClient(baseConfig);
     await client.v2get('trafficrules');
     const [url] = fetchMock.mock.calls[0] as [string];
@@ -110,13 +105,13 @@ describe('UnifiClient', () => {
   });
 
   it('v2delete() does not throw on 204 No Content', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: true,
       status: 204,
       statusText: 'No Content',
       headers: { get: () => null },
       json: async () => { throw new SyntaxError('Unexpected end of JSON input'); },
-    });
+    } as never);
     const client = new UnifiClient(baseConfig);
     await expect(client.v2delete('trafficrules/r1')).resolves.toBeUndefined();
   });
