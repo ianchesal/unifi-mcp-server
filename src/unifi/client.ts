@@ -1,4 +1,4 @@
-import { Agent } from 'undici';
+import { Agent, fetch, type RequestInit } from 'undici';
 
 export interface UnifiClientConfig {
   host: string;
@@ -64,6 +64,10 @@ export class UnifiClient implements IUnifiClient {
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
         throw new Error(`UniFi API request timed out after ${this.config.timeoutMs}ms`);
+      }
+      // undici reports every network failure as "fetch failed"; the real reason is in cause
+      if (err instanceof Error && err.cause instanceof Error) {
+        throw new Error(`${err.message}: ${err.cause.message}`, { cause: err.cause });
       }
       throw err;
     } finally {
