@@ -40,6 +40,13 @@ describe('listClients', () => {
     expect(result.data[0]).toEqual({ mac: 'aa:bb:cc:dd:ee:ff', name: 'Laptop', ip: '192.168.1.5' });
   });
 
+  it('keeps last_ip in the summary for offline clients, which have no ip', async () => {
+    const offline = { mac: 'aa:bb:cc:dd:ee:01', hostname: 'printer', last_ip: '192.168.1.175', rx_bytes: 1 };
+    const client = makeClient({ get: vi.fn().mockResolvedValue([offline]) });
+    const result = await listClients(client, { include_offline: true });
+    expect(result.data[0]).toEqual({ mac: 'aa:bb:cc:dd:ee:01', hostname: 'printer', last_ip: '192.168.1.175' });
+  });
+
   it('returns only requested fields', async () => {
     const client = makeClient({ get: vi.fn().mockResolvedValue([raw]) });
     const result = await listClients(client, { fields: ['mac', 'rx_bytes', 'missing'] });
