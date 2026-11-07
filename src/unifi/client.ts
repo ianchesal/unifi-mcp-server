@@ -55,7 +55,11 @@ export class UnifiClient implements IUnifiClient {
         },
       });
       if (!response.ok) {
-        throw new Error(`UniFi API HTTP ${response.status}: ${response.statusText}`);
+        // UniFi often sends an empty statusText; the useful reason is in the body
+        const body =
+          typeof response.text === 'function' ? await response.text().catch(() => '') : '';
+        const detail = body.trim().slice(0, 500) || response.statusText;
+        throw new Error(`UniFi API HTTP ${response.status}: ${detail}`);
       }
       if (response.status === 204 || response.headers.get('content-length') === '0') {
         return undefined as T;
