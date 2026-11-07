@@ -57,6 +57,20 @@ describe('UnifiClient', () => {
     await expect(client.get('rest/firewallrule')).rejects.toThrow('401');
   });
 
+  it('includes the response body in HTTP error messages', async () => {
+    vi.mocked(fetch).mockResolvedValue({
+      ok: false,
+      status: 400,
+      statusText: '',
+      headers: { get: () => null },
+      text: async () => '{"code":"api.err.InvalidPayload","message":"bad zone"}',
+    } as never);
+    const client = new UnifiClient(baseConfig);
+    await expect(client.v2post('firewall-policies', {})).rejects.toThrow(
+      'UniFi API HTTP 400: {"code":"api.err.InvalidPayload","message":"bad zone"}'
+    );
+  });
+
   it('get() throws timeout error on AbortError', async () => {
     vi.mocked(fetch).mockRejectedValue(Object.assign(new Error('aborted'), { name: 'AbortError' }));
     const client = new UnifiClient(baseConfig);
