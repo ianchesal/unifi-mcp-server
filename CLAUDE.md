@@ -23,7 +23,8 @@ docker compose up -d        # production run
 
 | File | Tools |
 |---|---|
-| `firewall.ts` | list/get/create/update/delete rules + groups |
+| `firewall.ts` | list/get/create/update/delete legacy rules + groups |
+| `policies.ts` | zone-based firewall: list zones, list/create/update/delete policies (v2 API) |
 | `network.ts` | list/get/create/update/delete networks |
 | `clients.ts` | list/get/block/unblock + fixed IP management |
 | `traffic.ts` | list/create/update/delete traffic rules (v2 API) |
@@ -36,6 +37,8 @@ docker compose up -d        # production run
 **IPS/IDS events are not available.** The UniFi Network Local API (v10.x) does not expose IPS/IDS threat events. The `stat/ips/event` endpoint was removed in firmware 10.x and no replacement has been documented. `get_threat_events` and `analyze_threats` were removed from this server because they cannot work. (The v2 `system-log/all` endpoint behind `get_network_events` does surface summary-level `THREAT_BLOCKED_V3` entries under `category: ["SECURITY"]`, with source/destination IPs but not signature detail.)
 
 **`list/alarm` is gone.** As of Network 10.x the v1 `list/alarm` endpoint returns `400 api.err.InvalidObject`; `get_network_events` uses v2 `POST system-log/all` (paginated, server-side `categories`/`severities` filters) instead. That gap is filled by two companion projects instead: [`unifi-siem-sink`](https://github.com/ianchesal/unifi-siem-sink) ingests UniFi's SIEM/syslog export and stores IPS/IDS events in SQLite over MCP, and [`unifi-siem-lens`](https://github.com/ianchesal/unifi-siem-lens) runs heuristics/dashboards on top of that store.
+
+**Zone-based firewall sites reject legacy rules.** Once a site migrates to zone-based firewall, `POST rest/firewallrule` returns HTTP 400 and `list_firewall_rules` returns nothing. Use the `policies.ts` tools (v2 `firewall/zone`, `firewall-policies`) instead. Policies are evaluated by ascending `index` within a source/destination zone pair: user policies get 10000 and above, predefined port-forward allows sit around 30000, so a new block lands ahead of them. `create_firewall_policy` returns `evaluated_after` to flag any enabled policy with a different action that would run first.
 
 ## Integration tests
 
