@@ -1,5 +1,13 @@
 # UniFi MCP Server
 
+> [!IMPORTANT]
+> **This repository is archived.** As of v2.0.0, `unifi-mcp-server` is part of
+> **[unifi-power-tools](https://github.com/ianchesal/unifi-power-tools)**,
+> which merges `unifi-siem-sink`, `unifi-mcp-server` and `unifi-siem-lens`
+> into one service: one container, one `/mcp` endpoint, one dashboard.
+> This repo gets no further updates. To move an existing install over, follow
+> [Migrating from the three services](https://github.com/ianchesal/unifi-power-tools#migrating-from-the-three-services).
+
 MCP server for the UniFi UDM Pro API. Exposes firewall (legacy rules and zone-based policies), network, client, traffic, port forwarding, and monitoring tools to Claude Code via Streamable HTTP transport.
 
 ## Why this exists
